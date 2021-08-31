@@ -7,9 +7,10 @@ from os import makedirs
 from os.path import isfile
 from random import random
 from time import sleep
+from typing import Any, Dict, List, Optional, Tuple
 
 from gppt import selenium as s
-from pixivpy3 import AppPixivAPI, PixivAPI
+from pixivpy3 import AppPixivAPI, PixivAPI  # type: ignore
 
 BANNER = '''
 #######################################
@@ -37,7 +38,7 @@ class PixivTagAnalyzer:
     class APIConnectionTemporaryRefused(Exception):
         pass
 
-    def __init__(self, pixiv_id, pixiv_pass):
+    def __init__(self, pixiv_id: str, pixiv_pass: str) -> None:
         self.ts = self.get_timestamp()
         self.pixiv_id, self.pixiv_pass = pixiv_id, pixiv_pass
         try:
@@ -47,7 +48,7 @@ class PixivTagAnalyzer:
         except Exception as e:
             raise self.UnexpectedError("{}: {}".format(type(e), e))
 
-    def __login(self):
+    def __login(self) -> None:
         REFRESH_TOKEN = self.__get_refresh_token(
             self.pixiv_id, self.pixiv_pass)
         self.api = PixivAPI()
@@ -58,20 +59,21 @@ class PixivTagAnalyzer:
         self.rand_wait(0.1)
 
     @staticmethod
-    def __get_refresh_token(pixiv_id, pixiv_pass):
+    def __get_refresh_token(pixiv_id: str, pixiv_pass: str) -> str:
         gpt = s.GetPixivToken(headless=True, user=pixiv_id, pass_=pixiv_pass)
         res = gpt.login()
         return res["refresh_token"]
 
     @staticmethod
-    def get_timestamp():
+    def get_timestamp() -> str:
         return datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")
 
     @staticmethod
-    def rand_wait(base=0.1, rand=1.0):
+    def rand_wait(base: float = 0.1, rand: float = 1.0) -> None:
         sleep(base + rand*random())
 
-    def analyze(self, target_id):
+    def analyze(self, target_id: str)\
+            -> Tuple[List[Tuple[str, int]], List[str], List[str]]:
         self.target_id = target_id
         bookmark_tags, works_tags = self.__collect_tag_data()
         clist = collections.Counter(bookmark_tags + works_tags)
@@ -79,7 +81,8 @@ class PixivTagAnalyzer:
             clist.most_common(), key=lambda x: x[1], reverse=True)
         return sorted_clist, bookmark_tags, works_tags
 
-    def get_target_info(self, target_id):
+    def get_target_info(self, target_id: str)\
+            -> Tuple[Dict[str, Any], Dict[str, str]]:
         user_info = self.aapi.user_detail(target_id)
         print(json.dumps(user_info, indent=4), file=open(
               'data/{}-{}-userinfo.json'.format(target_id, self.ts), 'w'))
@@ -88,7 +91,7 @@ class PixivTagAnalyzer:
                  "account": user_info.user.account}
         return user_info, names
 
-    def __collect_tag_data(self):
+    def __collect_tag_data(self) -> Tuple[List[str], List[str]]:
         try:
             bookmark_tags = self.__get_bookmarks_tag()
             works_tags = self.__get_works_tag()
@@ -102,7 +105,7 @@ class PixivTagAnalyzer:
         else:
             return bookmark_tags, works_tags
 
-    def __get_bookmarks_tag(self):
+    def __get_bookmarks_tag(self) -> List[str]:
         tags = []
         next = None
         res_len = 30
@@ -128,7 +131,7 @@ class PixivTagAnalyzer:
             f.close()
             return tags
 
-    def __get_works_tag(self):
+    def __get_works_tag(self) -> List[str]:
         tags = []
         next = None
         res_len = 30
@@ -155,7 +158,7 @@ class PixivTagAnalyzer:
             return tags
 
 
-def main():
+def main() -> None:
     print(BANNER)
 
     # init and login
@@ -191,7 +194,7 @@ def main():
     # specify number of tags to show
     len_clist = len(sorted_clist)
     print("[+]How many ranks do you wanna show?(ALL:%dtags):" % len_clist)
-    rank_num = None
+    rank_num: Optional[int] = None
     while type(rank_num) is not int:
         try:
             rank_num = int(input())
