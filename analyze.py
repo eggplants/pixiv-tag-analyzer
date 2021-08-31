@@ -3,6 +3,7 @@
 import collections
 import json
 from datetime import datetime
+from os import makedirs
 from random import random
 from time import sleep
 
@@ -72,7 +73,7 @@ class PixivTagAnalyzer:
     def get_target_info(self, target_id):
         user_info = self.aapi.user_detail(target_id)
         print(user_info, file=open(
-              '{}-{}-userinfo.json'.format(target_id, self.ts), 'w')
+              'data/{}-{}-userinfo.json'.format(target_id, self.ts), 'w'))
         self.rand_wait(0.5)
         names = {"name": user_info.user.name,
                  "account": user_info.user.account}
@@ -97,7 +98,7 @@ class PixivTagAnalyzer:
         next = None
         res_len = 30
         f = open(
-            "{}_{}-bookmarks.jsonl".format(self.target_id, self.ts), "a+")
+            "data/{}_{}-bookmarks.jsonl".format(self.target_id, self.ts), "a+")
         while res_len == 30:
             if next is None:
                 res = self.aapi.user_bookmarks_illust(self.target_id)
@@ -127,7 +128,7 @@ class PixivTagAnalyzer:
         next = None
         res_len = 30
         f = open(
-            "{}_{}-works.jsonl".format(self.target_id, self.ts), "a+")
+            "data/{}_{}-works.jsonl".format(self.target_id, self.ts), "a+")
         while res_len == 30:
             if next is None:
                 res = self.aapi.user_illusts(self.target_id)
@@ -153,6 +154,7 @@ class PixivTagAnalyzer:
 
 
 def main():
+    makedirs("data", exist_ok=True)
     print(BANNER)
 
     # init and login
