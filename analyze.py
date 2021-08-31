@@ -179,10 +179,10 @@ def main():
 
     # start to analyze
     print("[+]Started to analyze user %s(%s)!" % (target_id, names))
-    print("[+]Expect: bookmark: %d, work: %d" %
-          (user_info["profile"]["total_illust_bookmarks_public"],
-           user_info["profile"]["total_illusts"]
-           + user_info["profile"]["total_manga"]))
+    # print("[+]Expect: bookmark: %d, work: %d" %
+    #       (user_info["profile"]["total_illust_bookmarks_public"],
+    #        user_info["profile"]["total_illusts"]
+    #        + user_info["profile"]["total_manga"]))
     print("[+]Now getting tags of this user's bookmarks & works...")
     sorted_clist, bookmark_tags, works_tags = p.analyze(target_id)
     print("[+]Fetched data: bookmark: %d, work: %d" %
@@ -208,7 +208,7 @@ def main():
     else:
         print('\n'.join(result_lines), file=open(
             "data/{}_{}_ranking.txt".format(target_id, p.ts), "w"))
-        print("[[Tag ranking for {}({}, {})".format(
+        print("[[Tag ranking for {}({}, {})]]".format(
               names['name'], target_id, names['account']))
         print('\n'.join(result_lines[0:rank_num]))
 
