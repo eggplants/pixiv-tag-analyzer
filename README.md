@@ -12,6 +12,6 @@ Pixiv の投稿とブックマークタグを集めて雑にランキングつ�
 git clone https://github.com/eggplants/pixiv-tag-analyzer
 cd  pixiv-tag-analyzer
 cp client.sample.json client.json
-ed $_ # set id & pass
+editor $_ # set id & pass
 python analyze.py
 ```
