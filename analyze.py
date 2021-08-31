@@ -4,6 +4,7 @@ import collections
 import json
 from datetime import datetime
 from os import makedirs
+from os.path import isfile
 from random import random
 from time import sleep
 
@@ -155,13 +156,17 @@ class PixivTagAnalyzer:
 
 
 def main():
-    makedirs("data", exist_ok=True)
     print(BANNER)
 
     # init and login
     print('[+]Login...')
+    if not isfile("client.json"):
+        raise FileNotFoundError("client.json")
     client_info = json.load(open("client.json", "r"))
     p = PixivTagAnalyzer(client_info["pixiv_id"], client_info["password"])
+
+    # create data dir
+    makedirs("data", exist_ok=True)
 
     # specify target id
     print("[+]OK!")
