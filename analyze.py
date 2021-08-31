@@ -197,11 +197,14 @@ def main():
     result_lines = []
     for rank, t in enumerate(sorted_clist):
         parcentage = t[1]/len_clist*100
-        result_lines.append(f"#%0{len(str(len_clist))}d\t%s\n(%d tags, %.02f%s)"
-                            % (rank + 1, t[0], t[1], parcentage, "%"))
+        result_lines.append(
+            f"#%0{len(str(len_clist))}d\t%s\n(%d tags, %.02f%s)" % (
+                rank + 1, t[0], t[1], parcentage, "%"))
     else:
-        print('\n'.join(result_lines), file=open("data/{}_{}_ranking.txt".format(
-                                                 target_id, p.ts), "w"))
+        print('\n'.join(result_lines), file=open(
+            "data/{}_{}_ranking.txt".format(target_id, p.ts), "w"))
+        print("[[Tag ranking for {}({}, {})".format(
+              names['name'], target_id, names['account']))
         print('\n'.join(result_lines[0:rank_num]))
 
 
