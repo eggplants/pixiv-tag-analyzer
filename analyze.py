@@ -71,6 +71,8 @@ class PixivTagAnalyzer:
 
     def get_target_info(self, target_id):
         user_info = self.aapi.user_detail(target_id)
+        print(user_info, file=open(
+              '{}-{}-userinfo.json'.format(target_id, self.ts), 'w')
         self.rand_wait(0.5)
         names = {"name": user_info.user.name,
                  "account": user_info.user.account}
@@ -163,7 +165,7 @@ def main():
     print("[+]Target_id?(ex.かにかま->53993): ")
     print("[+]If you want to analyze own account, press Enter key.")
     target_id = input()
-    target_id = (target_id if target_id == ""
+    target_id = (target_id if target_id != ""
                  else p.login_info.response.user.id)
     names = p.get_target_info(target_id)
 
