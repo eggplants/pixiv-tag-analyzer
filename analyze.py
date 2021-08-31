@@ -190,7 +190,7 @@ def main():
 
     # specify number of tags to show
     len_clist = len(sorted_clist)
-    print("[+]How many ranks do u wanna show?(ALL:%dtags):" % len_clist)
+    print("[+]How many ranks do you wanna show?(ALL:%dtags):" % len_clist)
     rank_num = None
     while type(rank_num) is not int:
         try:
