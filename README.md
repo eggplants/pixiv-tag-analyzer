@@ -4,7 +4,7 @@
 
 ## DEMO
 
-![image](https://user-images.githubusercontent.com/42153744/131588558-e877db6b-1105-4966-be16-80ecf1f1b199.png)
+![image](https://user-images.githubusercontent.com/42153744/131588844-91678751-2a27-4e83-a26a-7eba74ba8df6.png)
 
 ## Run
 
