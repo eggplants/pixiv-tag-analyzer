@@ -2,6 +2,8 @@
 
 import collections
 import json
+from random import random
+from time import sleep
 
 from gppt import selenium as s
 from pixivpy3 import AppPixivAPI, PixivAPI
@@ -31,15 +33,17 @@ class PixivTagAnalyzer:
         try:
             self.__login()
         except Exception as e:
-            raise self.LoginFailedError("(reason: {})".format(e))
+            raise self.LoginFailedError("{}: {}".format(type(e), e))
 
     def __login(self):
         REFRESH_TOKEN = self.__get_refresh_token(
             self.pixiv_id, self.pixiv_pass)
         self.api = PixivAPI()
         self.login_info = self.api.auth(refresh_token=REFRESH_TOKEN)
+        self.rand_wait(0.1)
         self.aapi = AppPixivAPI()
         self.aapi.auth(refresh_token=REFRESH_TOKEN)
+        self.rand_wait(0.1)
 
     @staticmethod
     def __get_refresh_token(pixiv_id, pixiv_pass):
@@ -59,6 +63,7 @@ class PixivTagAnalyzer:
 
     def get_target_info(self, target_id):
         user_info = self.aapi.user_detail(target_id)
+        self.randSleep(0.1)
         names = {"name": user_info.user.name,
                  "account": user_info.user.account}
         return names
@@ -69,16 +74,19 @@ class PixivTagAnalyzer:
         res_len = 30
         while res_len == 30:
             if next is None:
-                res = self.api.user_bookmarks_illust(self.target_id)
+                res = self.aapi.user_bookmarks_illust(self.target_id)
             else:
-                res = self.api.user_bookmarks_illust(**next)
+                res = self.aapi.user_bookmarks_illust(**next)
+
+            self.randSleep(0.1)
 
             for tags_ in [i["tags"] for i in res["illusts"]]:
                 tag_names = [tag_["name"] for tag_ in tags_]
                 tags.extend(tag_names)
             res_len = len(res["illusts"])
             self.counters[0] += res_len
-            next = self.api.parse_qs(res["next_url"])
+            next = self.aapi.parse_qs(res["next_url"])
+            self.randSleep(0.3)
         else:
             return tags
 
@@ -88,17 +96,23 @@ class PixivTagAnalyzer:
         res_len = 30
         while res_len == 30:
             if next is None:
-                res = self.api.user_illusts(self.target_id)
+                res = self.aapi.user_illusts(self.target_id)
             else:
-                res = self.api.user_illusts(**next)
+                res = self.aapi.user_illusts(**next)
+
+            self.randSleep(0.1)
 
             for tags_ in [i["tags"] for i in res["illusts"]]:
                 tag_name = [tag_["name"] for tag_ in tags_]
                 tags.extend(tag_name)
-            self.counter[1] += len(res["illusts"])
-            next = self.api.parse_qs(res["next_url"])
+            self.counters[1] += len(res["illusts"])
+            next = self.aapi.parse_qs(res["next_url"])
+            self.randSleep(0.1)
         else:
             return tags
+
+    def rand_wait(self, base=0.1, rand=0.5):
+        sleep(base + rand*random())
 
 
 def main():
@@ -114,7 +128,7 @@ def main():
 
     names = p.get_target_info(target_id)
     print("[+]Started to analyze user %s(%s)!" % (target_id, names))
-    print("[+]Now getting tags of this user's bookmarks & work...")
+    print("[+]Now getting tags of this user's bookmarks & works...")
     sorted_clist, bookmark_tags, works_tags = p.analyze(target_id)
     print("bookmark: %d, work: %d found." %
           (len(bookmark_tags), len(works_tags)))

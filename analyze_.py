@@ -2,7 +2,6 @@ import collections
 import json
 from getpass import getpass
 
-from gppt import selenium as s
 from pixivpy3 import AppPixivAPI, PixivAPI
 
 # AA
@@ -111,16 +110,8 @@ try:
 except Exception:
     rank_num = 10
 rank = 1
-for t in sorted(clist.most_common(), key=lambda x: x[1], reverse=True)[0:rank_num]:
+s_c = sorted(clist.most_common(), key=lambda x: x[1], reverse=True)
+for t in s_c[0:rank_num]:
     parcentage = t[1]/len(clist)*100
     print("#%03d\t%s\n(%d, %.02f%s)" % (rank, t[0], t[1], parcentage, "%"))
     rank += 1
-
-# debug json
-# j=aapi.user_bookmarks_illust(**next)
-# with open('out.json','w') as f:
-#	json.dump(j, f, ensure_ascii=False)
-#
-#cmd='python -m json.tool out.json'
-# with open('out_b.json','w') as f:
-#	subprocess.call(cmd.split(),stdout=f)
