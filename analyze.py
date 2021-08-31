@@ -1,11 +1,12 @@
+#!/usr/bin/env python3
+
 import collections
 import json
-from getpass import getpass
 
-from pixivpy3 import *
+from gppt import selenium as s
+from pixivpy3 import AppPixivAPI, PixivAPI
 
-# AA
-print('''
+BANNER = '''
 #######################################
 #######################################
 ##                                   ##
@@ -18,110 +19,118 @@ print('''
 ##                                   ##
 #######################################
 #######################################
-''')
-
-# Auth
-f = open("client.json", "r")
-client_info = json.load(f)
-f.close()
-api = PixivAPI()
-api.hosts = "https://app-api.pixiv.net"
-
-# login with account info json file
-try:
-    login_info = api.login(client_info["pixiv_id"], client_info["password"])
-    aapi = AppPixivAPI()
-    aapi.login(client_info["pixiv_id"], client_info["password"])
-except:
-    #print("[!]Auth from file failed!")
-    # login with stdin input
-    try:
-        print("[+]ID is mail address, userid, account name.")
-        stdin_login = (input("[+]ID: "), getpass("[+]Password: "))
-        login_info = api.login(stdin_login[0], stdin_login[1])
-        aapi = AppPixivAPI()
-        aapi.login(stdin_login[0], stdin_login[1])
-    except:
-        print("[!]Auth from stdin failed!")
-        exit()
-
-# input target id
-print("[+]Authorization successful!")
-print("[+]Target_id?(ex.かにかま->53993): ")
-print("[+]If you want to analyze own account, press Enter key.")
-target_id = input()
-if target_id == "":
-    target_id = login_info.response.user.id
-
-# let's analyze!
-user_info = aapi.user_detail(target_id)
-names = "name: "+user_info.user.name+", account: "+user_info.user.account
-tags = []
-next = ""
-c = [0, 0]
-
-# retrieve bookmark tag
+'''
 
 
-def retrieve_bookmarks_tag(api, tags, next, target_id):
-    while True:
-        if next == "":
-            j = api.user_bookmarks_illust(target_id)
+class PixivTagAnalyzer:
+    class LoginFailedError(Exception):
+        pass
+
+    def __init__(self, pixiv_id, pixiv_pass):
+        self.pixiv_id, self.pixiv_pass = pixiv_id, pixiv_pass
+        try:
+            self.__login()
+        except Exception as e:
+            raise self.LoginFailedError("(reason: {})".format(e))
+
+    def __login(self):
+        REFRESH_TOKEN = self.__get_refresh_token(
+            self.pixiv_id, self.pixiv_pass)
+        self.api = PixivAPI()
+        self.login_info = self.api.auth(refresh_token=REFRESH_TOKEN)
+        self.aapi = AppPixivAPI()
+        self.aapi.auth(refresh_token=REFRESH_TOKEN)
+
+    @staticmethod
+    def __get_refresh_token(pixiv_id, pixiv_pass):
+        gpt = s.GetPixivToken(headless=True, user=pixiv_id, pass_=pixiv_pass)
+        res = gpt.login()
+        return res["refresh_token"]
+
+    def analyze(self, target_id):
+        self.target_id = target_id
+        self.counters = [0, 0]
+        bookmark_tags = self.__get_bookmarks_tag()
+        works_tags = self.__get_works_tag()
+        clist = collections.Counter(self.bookmark_tags + self.works_tags)
+        sorted_clist = sorted(
+            clist.most_common(), key=lambda x: x[1], reverse=True)
+        return sorted_clist, bookmark_tags, works_tags
+
+    def get_target_info(self, target_id):
+        user_info = self.aapi.user_detail(target_id)
+        names = {"name": user_info.user.name,
+                 "account": user_info.user.account}
+        return names
+
+    def __get_bookmarks_tag(self):
+        tags = []
+        next = None
+        res_len = 30
+        while res_len == 30:
+            if next is None:
+                res = self.api.user_bookmarks_illust(self.target_id)
+            else:
+                res = self.api.user_bookmarks_illust(**next)
+
+            for tags_ in [i["tags"] for i in res["illusts"]]:
+                tag_names = [tag_["name"] for tag_ in tags_]
+                tags.extend(tag_names)
+            res_len = len(res["illusts"])
+            self.counters[0] += res_len
+            next = self.api.parse_qs(res["next_url"])
         else:
-            j = api.user_bookmarks_illust(**next)
+            return tags
 
-        for _ in [i["tags"] for i in j["illusts"]]:
-            for __ in _:
-                tags.append(__["name"])
-        c[0] += len(j["illusts"])
-        if len(j["illusts"]) != 30:
-            break
-        next = api.parse_qs(j["next_url"])
+    def __get_works_tag(self):
+        tags = []
+        next = None
+        res_len = 30
+        while res_len == 30:
+            if next is None:
+                res = self.api.user_illusts(self.target_id)
+            else:
+                res = self.api.user_illusts(**next)
 
-# retrieve work tag
-
-
-def retrieve_works_tag(api, tags, next, target_id):
-    while True:
-        if next == "":
-            j = api.user_illusts(target_id)
+            for tags_ in [i["tags"] for i in res["illusts"]]:
+                tag_name = [tag_["name"] for tag_ in tags_]
+                tags.extend(tag_name)
+            self.counter[1] += len(res["illusts"])
+            next = self.api.parse_qs(res["next_url"])
         else:
-            j = api.user_illusts(**next)
-
-        for _ in [i["tags"] for i in j["illusts"]]:
-            for __ in _:
-                tags.append(__["name"])
-        c[1] += len(j["illusts"])
-        if len(j["illusts"]) != 30:
-            break
-        next = api.parse_qs(j["next_url"])
+            return tags
 
 
-print("[+]Started to analyze user %s(%s)!" % (target_id, names))
-print("[+]Now getting tags of this user's bookmarks...")
-retrieve_bookmarks_tag(aapi, tags, next, target_id)
-print("[+]Now getting tags of this user's work...")
-retrieve_works_tag(aapi, tags, next, target_id)
-print("bookmark: %d, work: %d found." % (c[0], c[1]))
+def main():
+    print('[+]login...')
+    client_info = json.load(open("client.json", "r"))
+    p = PixivTagAnalyzer(client_info["pixiv_id"], client_info["password"])
+    print("[+]OK!")
+    print("[+]Target_id?(ex.かにかま->53993): ")
+    print("[+]If you want to analyze own account, press Enter key.")
+    target_id = input()
+    if target_id == "":
+        target_id = p.login_info.response.user.id
 
-# show ranking
-clist = collections.Counter(tags)
-print("[+]How many ranks do u wanna show?(ALL:%dtags):" % (len(clist)))
-try:
-    rank_num = int(input())
-except:
-    rank_num = 10
-rank = 1
-for t in sorted(clist.most_common(), key=lambda x: x[1], reverse=True)[0:rank_num]:
-    parcentage = t[1]/len(clist)*100
-    print("#%03d\t%s\n(%d, %.02f%s)" % (rank, t[0], t[1], parcentage, "%"))
-    rank += 1
+    names = p.get_target_info(target_id)
+    print("[+]Started to analyze user %s(%s)!" % (target_id, names))
+    print("[+]Now getting tags of this user's bookmarks & work...")
+    sorted_clist, bookmark_tags, works_tags = p.analyze(target_id)
+    print("bookmark: %d, work: %d found." %
+          (len(bookmark_tags), len(works_tags)))
+    len_clist = len(sorted_clist)
+    print("[+]How many ranks do u wanna show?(ALL:%dtags):" % len_clist)
+    rank_num = None
+    while type(rank_num) is int:
+        try:
+            rank_num = int(input())
+        except ValueError:
+            print("[!]Invalid input.")
 
-# debug json
-# j=aapi.user_bookmarks_illust(**next)
-# with open('out.json','w') as f:
-#	json.dump(j, f, ensure_ascii=False)
-#
-#cmd='python -m json.tool out.json'
-# with open('out_b.json','w') as f:
-#	subprocess.call(cmd.split(),stdout=f)
+    for rank, t in enumerate(sorted_clist[0:rank_num]):
+        parcentage = t[1]/len_clist*100
+        print("#%03d\t%s\n(%d, %.02f%s)" % (rank, t[0], t[1], parcentage, "%"))
+
+
+if __name__ == '__main__':
+    main()
