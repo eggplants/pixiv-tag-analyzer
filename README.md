@@ -4,7 +4,8 @@ Pixiv の投稿とブックマークタグを集めて雑にランキングつ�
 
 ## DEMO
 
-[WIP]
+![image](https://user-images.githubusercontent.com/42153744/131588558-e877db6b-1105-4966-be16-80ecf1f1b199.png)
+
 
 ## Run
 
