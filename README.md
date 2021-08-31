@@ -8,7 +8,7 @@ Pixiv の投稿とブックマークタグを集めて雑にランキングつ�
 
 ## Run
 
-_In advance, please setup google-chrome-stable + selenium + webdriver_
+Note: _In advance, please setup google-chrome-stable + selenium + webdriver_
 
 ```bash
 git clone https://github.com/eggplants/pixiv-tag-analyzer
