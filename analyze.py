@@ -62,22 +62,30 @@ class PixivTagAnalyzer:
         res = gpt.login()
         return res["refresh_token"]
 
+    @staticmethod
+    def get_timestamp():
+        return datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")
+
+    @staticmethod
+    def rand_wait(base=0.1, rand=1.0):
+        sleep(base + rand*random())
+
     def analyze(self, target_id):
         self.target_id = target_id
         bookmark_tags, works_tags = self.__collect_tag_data()
-        clist = collections.Counter(self.bookmark_tags + self.works_tags)
+        clist = collections.Counter(bookmark_tags + works_tags)
         sorted_clist = sorted(
             clist.most_common(), key=lambda x: x[1], reverse=True)
         return sorted_clist, bookmark_tags, works_tags
 
     def get_target_info(self, target_id):
         user_info = self.aapi.user_detail(target_id)
-        print(user_info, file=open(
+        print(json.dumps(user_info, indent=4), file=open(
               'data/{}-{}-userinfo.json'.format(target_id, self.ts), 'w'))
         self.rand_wait(0.5)
         names = {"name": user_info.user.name,
                  "account": user_info.user.account}
-        return names
+        return user_info, names
 
     def __collect_tag_data(self):
         try:
@@ -107,7 +115,7 @@ class PixivTagAnalyzer:
 
             self.rand_wait(0.5)
 
-            print(res, file=f)  # debug
+            print(json.dumps(res, indent=4), file=f)
 
             for tags_ in [i["tags"] for i in res["illusts"]]:
                 tag_names = [tag_["name"] for tag_ in tags_]
@@ -118,10 +126,6 @@ class PixivTagAnalyzer:
         else:
             f.close()
             return tags
-
-    @staticmethod
-    def get_timestamp():
-        return datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")
 
     def __get_works_tag(self):
         tags = []
@@ -135,22 +139,19 @@ class PixivTagAnalyzer:
             else:
                 res = self.aapi.user_illusts(**next)
 
-            print(res, file=f)
+            print(json.dumps(res, indent=4), file=f)
 
-            self.rand_wait(0.5)
+            self.rand_wait(0.6)
 
             for tags_ in [i["tags"] for i in res["illusts"]]:
                 tag_name = [tag_["name"] for tag_ in tags_]
                 tags.extend(tag_name)
+            res_len = len(res["illusts"])
             next = self.aapi.parse_qs(res["next_url"])
-            self.rand_wait(0.5)
+            self.rand_wait(0.6)
         else:
             f.close()
             return tags
-
-    @staticmethod
-    def rand_wait(base=0.1, rand=1.0):
-        sleep(base + rand*random())
 
 
 def main():
@@ -169,20 +170,24 @@ def main():
     target_id = input()
     target_id = (target_id if target_id != ""
                  else p.login_info.response.user.id)
-    names = p.get_target_info(target_id)
+    user_info, names = p.get_target_info(target_id)
 
     # start to analyze
     print("[+]Started to analyze user %s(%s)!" % (target_id, names))
+    print("[+]Expect: bookmark: %d, work: %d" %
+          (user_info["profile"]["total_illust_bookmarks_public"],
+           user_info["profile"]["total_illusts"]
+           + user_info["profile"]["total_manga"]))
     print("[+]Now getting tags of this user's bookmarks & works...")
     sorted_clist, bookmark_tags, works_tags = p.analyze(target_id)
-    print("bookmark: %d, work: %d found." %
+    print("[+]Fetched data: bookmark: %d, work: %d" %
           (len(bookmark_tags), len(works_tags)))
 
     # specify number of tags to show
     len_clist = len(sorted_clist)
     print("[+]How many ranks do u wanna show?(ALL:%dtags):" % len_clist)
     rank_num = None
-    while type(rank_num) is int:
+    while type(rank_num) is not int:
         try:
             rank_num = int(input())
         except ValueError:
