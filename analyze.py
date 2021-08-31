@@ -116,6 +116,7 @@ class PixivTagAnalyzer:
 
 
 def main():
+    print(BANNER)
     print('[+]login...')
     client_info = json.load(open("client.json", "r"))
     p = PixivTagAnalyzer(client_info["pixiv_id"], client_info["password"])
