@@ -1,5 +1,7 @@
 # pixiv-tag-analyzer
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/30545f499d5c82b19bcd/maintainability)](https://codeclimate.com/github/eggplants/pixiv-tag-analyzer/maintainability) [![PyPI version](https://img.shields.io/pypi/v/pixiv-tag-analyzer)](https://pypi.org/project/pixiv-tag-analyzer)
+
 任意のpixivユーザの投稿,ブックマークの情報を収集しタグからその人の性癖を暴く
 
 ## DEMO
