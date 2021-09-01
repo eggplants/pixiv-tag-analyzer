@@ -10,6 +10,21 @@
 
 Note: _In advance, please setup google-chrome-stable + selenium + webdriver_
 
+### From PyPI
+
+```bash
+pip install pixiv-tag-analyzer
+cat <<'A' > client.json
+{
+  "pixiv_id": "<mail address or userid>",
+  "password": "<password>"
+}
+A
+pta
+```
+
+### From source
+
 ```bash
 git clone https://github.com/eggplants/pixiv-tag-analyzer
 cd pixiv-tag-analyzer
