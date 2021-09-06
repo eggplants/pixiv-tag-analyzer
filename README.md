@@ -1,6 +1,6 @@
 # pixiv-tag-analyzer
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/30545f499d5c82b19bcd/maintainability)](https://codeclimate.com/github/eggplants/pixiv-tag-analyzer/maintainability) [![PyPI version](https://img.shields.io/pypi/v/pixiv-tag-analyzer)](https://pypi.org/project/pixiv-tag-analyzer)
+[![PyPI version](https://img.shields.io/pypi/v/pixiv-tag-analyzer)](https://pypi.org/project/pixiv-tag-analyzer) [![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/eggplanter/pta)](https://hub.docker.com/r/eggplanter/pta) [![Maintainability](https://api.codeclimate.com/v1/badges/30545f499d5c82b19bcd/maintainability)](https://codeclimate.com/github/eggplants/pixiv-tag-analyzer/maintainability)
 
 任意のpixivユーザの投稿,ブックマークの情報を収集しタグからその人の性癖を暴く
 
@@ -16,22 +16,11 @@ Note: _In advance, please setup google-chrome-stable + selenium + webdriver_
 
 ```bash
 pip install pixiv-tag-analyzer
-cat <<'A' > client.json
-{
-  "pixiv_id": "<mail address or userid>",
-  "password": "<password>"
-}
-A
 pta
 ```
 
-### From source
+### From Docker
 
 ```bash
-git clone https://github.com/eggplants/pixiv-tag-analyzer
-cd pixiv-tag-analyzer
-python -m pip install -r requirements.txt
-cp client.sample.json client.json
-editor $_ # set id & pass
-python analyze.py
+docker run -it eggplanter/pta
 ```
