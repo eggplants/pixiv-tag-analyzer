@@ -6,8 +6,7 @@ from random import random
 from time import sleep
 from typing import Any, Dict, List, Tuple
 
-from gppt import selenium as s
-from pixivpy3 import AppPixivAPI, PixivAPI  # type: ignore
+from .auth import PixivAuth
 
 
 class PixivTagAnalyzer:
@@ -22,29 +21,7 @@ class PixivTagAnalyzer:
 
     def __init__(self, pixiv_id: str, pixiv_pass: str) -> None:
         self.ts = self.get_timestamp()
-        self.pixiv_id, self.pixiv_pass = pixiv_id, pixiv_pass
-        try:
-            self.__login()
-        except ValueError:
-            raise self.LoginFailedError("Check your auth info. Maybe wrong.")
-        except Exception as e:
-            raise self.UnexpectedError("{}: {}".format(type(e), e))
-
-    def __login(self) -> None:
-        REFRESH_TOKEN = self.__get_refresh_token(
-            self.pixiv_id, self.pixiv_pass)
-        self.api = PixivAPI()
-        self.login_info = self.api.auth(refresh_token=REFRESH_TOKEN)
-        self.rand_wait(0.1)
-        self.aapi = AppPixivAPI()
-        self.aapi.auth(refresh_token=REFRESH_TOKEN)
-        self.rand_wait(0.1)
-
-    @staticmethod
-    def __get_refresh_token(pixiv_id: str, pixiv_pass: str) -> str:
-        gpt = s.GetPixivToken(headless=True, user=pixiv_id, pass_=pixiv_pass)
-        res = gpt.login()
-        return res["refresh_token"]
+        self.login_info, self.aapi = PixivAuth().auth()
 
     @staticmethod
     def get_timestamp() -> str:
