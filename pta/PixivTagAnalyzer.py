@@ -19,7 +19,7 @@ class PixivTagAnalyzer:
     class APIConnectionTemporaryRefused(Exception):
         pass
 
-    def __init__(self, pixiv_id: str, pixiv_pass: str) -> None:
+    def __init__(self) -> None:
         self.ts = self.get_timestamp()
         self.login_info, self.aapi = PixivAuth().auth()
 

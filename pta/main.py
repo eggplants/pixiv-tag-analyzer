@@ -25,12 +25,7 @@ BANNER = '''
 def main() -> None:
     print(BANNER)
 
-    # init and login
-    print('[+]Login...')
-    if not isfile("client.json"):
-        raise FileNotFoundError("client.json")
-    client_info = load(open("client.json", "r"))
-    p = PixivTagAnalyzer(client_info["pixiv_id"], client_info["password"])
+    p = PixivTagAnalyzer()
 
     # create data dir
     makedirs("data", exist_ok=True)
