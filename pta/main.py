@@ -32,7 +32,7 @@ def main() -> None:
     # specify target id
     print("[+]OK!")
     print("[+]Target_id?(ex.かにかま->53993): ")
-    print("[+]If you want to analyze own account, press Enter key.")
+    print("[+]If you want to analyze own account, press Enter key.: ", end="")
     target_id = input()
     target_id = (target_id if target_id != ""
                  else p.get_login_info()["response"]["user"]["id"])
@@ -47,13 +47,14 @@ def main() -> None:
 
     # specify number of tags to show
     len_clist = len(sorted_clist)
-    print("[+]How many ranks do you wanna show?(ALL:%dtags):" % len_clist)
+    print("[+]How many ranks do you wanna show?(ALL:%dtags): "
+          % len_clist, end="")
     rank_num: Optional[int] = None
     while type(rank_num) is not int:
         try:
             rank_num = int(input())
         except ValueError:
-            print("[!]Invalid input.")
+            print("[!]Invalid input.: ", end="")
 
     # print top n
     result_lines = []
