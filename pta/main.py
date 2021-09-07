@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-from json import load
+
 from os import makedirs
-from os.path import isfile
 from typing import Optional
 
 from .PixivTagAnalyzer import PixivTagAnalyzer
@@ -36,15 +35,11 @@ def main() -> None:
     print("[+]If you want to analyze own account, press Enter key.")
     target_id = input()
     target_id = (target_id if target_id != ""
-                 else p.login_info.response.user.id)
-    user_info, names = p.get_target_info(target_id)
+                 else p.get_login_info()["response"]["user"]["id"])
+    _, names = p.get_target_info(target_id)
 
     # start to analyze
     print("[+]Started to analyze user %s(%s)!" % (target_id, names))
-    # print("[+]Expect: bookmark: %d, work: %d" %
-    #       (user_info["profile"]["total_illust_bookmarks_public"],
-    #        user_info["profile"]["total_illusts"]
-    #        + user_info["profile"]["total_manga"]))
     print("[+]Now getting tags of this user's bookmarks & works...")
     sorted_clist, bookmark_tags, works_tags = p.analyze(target_id)
     print("[+]Fetched data: bookmark: %d, work: %d" %

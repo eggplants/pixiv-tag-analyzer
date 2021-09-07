@@ -6,7 +6,7 @@ from random import random
 from time import sleep
 from typing import Any, Dict, List, Tuple
 
-from .auth import PixivAuth
+from gppt import LoginInfo, PixivAuth
 
 
 class PixivTagAnalyzer:
@@ -21,7 +21,10 @@ class PixivTagAnalyzer:
 
     def __init__(self) -> None:
         self.ts = self.get_timestamp()
-        self.login_info, self.aapi = PixivAuth().auth()
+        self.aapi, self.login_info = PixivAuth().auth()
+
+    def get_login_info(self) -> LoginInfo:
+        return self.login_info
 
     @staticmethod
     def get_timestamp() -> str:
