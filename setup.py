@@ -2,7 +2,7 @@ from setuptools import find_packages, setup  # type: ignore
 
 setup(
     name='pixiv-tag-analyzer',
-    version='0.4',
+    version='1.0',
     description="Collects information on any pixiv user's posts and bookmarks, and explores the user's sexuality from the tags.",
     description_content_type='',
     long_description=open('README.md').read(),
