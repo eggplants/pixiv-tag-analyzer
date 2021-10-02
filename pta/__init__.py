@@ -1,1 +1,3 @@
-from .PixivTagAnalyzer import PixivTagAnalyzer  # noqa: F401
+from .PixivTagAnalyzer import PixivTagAnalyzer
+
+__all__ = ["PixivTagAnalyzer"]

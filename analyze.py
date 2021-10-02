@@ -10,9 +10,9 @@ from time import sleep
 from typing import Any, Dict, List, Optional, Tuple
 
 from gppt import selenium as s
-from pixivpy3 import AppPixivAPI, PixivAPI  # type: ignore
+from pixivpy3 import AppPixivAPI, PixivAPI
 
-BANNER = '''
+BANNER = """
 #######################################
 #######################################
 ##                                   ##
@@ -25,7 +25,7 @@ BANNER = '''
 ##                                   ##
 #######################################
 #######################################
-'''
+"""
 
 
 class PixivTagAnalyzer:
@@ -49,8 +49,7 @@ class PixivTagAnalyzer:
             raise self.UnexpectedError("{}: {}".format(type(e), e))
 
     def __login(self) -> None:
-        REFRESH_TOKEN = self.__get_refresh_token(
-            self.pixiv_id, self.pixiv_pass)
+        REFRESH_TOKEN = self.__get_refresh_token(self.pixiv_id, self.pixiv_pass)
         self.api = PixivAPI()
         self.login_info = self.api.auth(refresh_token=REFRESH_TOKEN)
         self.rand_wait(0.1)
@@ -60,8 +59,8 @@ class PixivTagAnalyzer:
 
     @staticmethod
     def __get_refresh_token(pixiv_id: str, pixiv_pass: str) -> str:
-        gpt = s.GetPixivToken(headless=True, user=pixiv_id, pass_=pixiv_pass)
-        res = gpt.login()
+        gpt = s.GetPixivToken()
+        res = gpt.login(headless=True, user=pixiv_id, pass_=pixiv_pass)
         return res["refresh_token"]
 
     @staticmethod
@@ -70,25 +69,25 @@ class PixivTagAnalyzer:
 
     @staticmethod
     def rand_wait(base: float = 0.1, rand: float = 1.0) -> None:
-        sleep(base + rand*random())
+        sleep(base + rand * random())
 
-    def analyze(self, target_id: str)\
-            -> Tuple[List[Tuple[str, int]], List[str], List[str]]:
+    def analyze(
+        self, target_id: str
+    ) -> Tuple[List[Tuple[str, int]], List[str], List[str]]:
         self.target_id = target_id
         bookmark_tags, works_tags = self.__collect_tag_data()
         clist = collections.Counter(bookmark_tags + works_tags)
-        sorted_clist = sorted(
-            clist.most_common(), key=lambda x: x[1], reverse=True)
+        sorted_clist = sorted(clist.most_common(), key=lambda x: x[1], reverse=True)
         return sorted_clist, bookmark_tags, works_tags
 
-    def get_target_info(self, target_id: str)\
-            -> Tuple[Dict[str, Any], Dict[str, str]]:
+    def get_target_info(self, target_id: str) -> Tuple[Dict[str, Any], Dict[str, str]]:
         user_info = self.aapi.user_detail(target_id)
-        print(json.dumps(user_info, indent=4), file=open(
-              'data/{}-{}-userinfo.json'.format(target_id, self.ts), 'w'))
+        print(
+            json.dumps(user_info, indent=4),
+            file=open("data/{}-{}-userinfo.json".format(target_id, self.ts), "w"),
+        )
         self.rand_wait(0.5)
-        names = {"name": user_info.user.name,
-                 "account": user_info.user.account}
+        names = {"name": user_info.user.name, "account": user_info.user.account}
         return user_info, names
 
     def __collect_tag_data(self) -> Tuple[List[str], List[str]]:
@@ -109,8 +108,7 @@ class PixivTagAnalyzer:
         tags = []
         next = None
         res_len = 30
-        f = open(
-            "data/{}_{}-bookmarks.jsonl".format(self.target_id, self.ts), "a+")
+        f = open("data/{}_{}-bookmarks.jsonl".format(self.target_id, self.ts), "a+")
         while res_len == 30:
             if next is None:
                 res = self.aapi.user_bookmarks_illust(self.target_id)
@@ -135,8 +133,7 @@ class PixivTagAnalyzer:
         tags = []
         next = None
         res_len = 30
-        f = open(
-            "data/{}_{}-works.jsonl".format(self.target_id, self.ts), "a+")
+        f = open("data/{}_{}-works.jsonl".format(self.target_id, self.ts), "a+")
         while res_len == 30:
             if next is None:
                 res = self.aapi.user_illusts(self.target_id)
@@ -162,7 +159,7 @@ def main() -> None:
     print(BANNER)
 
     # init and login
-    print('[+]Login...')
+    print("[+]Login...")
     if not isfile("client.json"):
         raise FileNotFoundError("client.json")
     client_info = json.load(open("client.json", "r"))
@@ -176,8 +173,7 @@ def main() -> None:
     print("[+]Target_id?(ex.かにかま->53993): ")
     print("[+]If you want to analyze own account, press Enter key.")
     target_id = input()
-    target_id = (target_id if target_id != ""
-                 else p.login_info.response.user.id)
+    target_id = target_id if target_id != "" else p.login_info.response.user.id
     user_info, names = p.get_target_info(target_id)
 
     # start to analyze
@@ -188,8 +184,10 @@ def main() -> None:
     #        + user_info["profile"]["total_manga"]))
     print("[+]Now getting tags of this user's bookmarks & works...")
     sorted_clist, bookmark_tags, works_tags = p.analyze(target_id)
-    print("[+]Fetched data: bookmark: %d, work: %d" %
-          (len(bookmark_tags), len(works_tags)))
+    print(
+        "[+]Fetched data: bookmark: %d, work: %d"
+        % (len(bookmark_tags), len(works_tags))
+    )
 
     # specify number of tags to show
     len_clist = len(sorted_clist)
@@ -204,17 +202,23 @@ def main() -> None:
     # print top n
     result_lines = []
     for rank, t in enumerate(sorted_clist):
-        parcentage = t[1]/len_clist*100
+        parcentage = t[1] / len_clist * 100
         result_lines.append(
-            f"#%0{len(str(len_clist))}d\t%s\n(%d tags, %.02f%s)" % (
-                rank + 1, t[0], t[1], parcentage, "%"))
+            f"#%0{len(str(len_clist))}d\t%s\n(%d tags, %.02f%s)"
+            % (rank + 1, t[0], t[1], parcentage, "%")
+        )
     else:
-        print('\n'.join(result_lines), file=open(
-            "data/{}_{}_ranking.txt".format(target_id, p.ts), "w"))
-        print("[[Tag ranking for {}({}, {})]]".format(
-              names['name'], target_id, names['account']))
-        print('\n'.join(result_lines[0:rank_num]))
+        print(
+            "\n".join(result_lines),
+            file=open("data/{}_{}_ranking.txt".format(target_id, p.ts), "w"),
+        )
+        print(
+            "[[Tag ranking for {}({}, {})]]".format(
+                names["name"], target_id, names["account"]
+            )
+        )
+        print("\n".join(result_lines[0:rank_num]))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

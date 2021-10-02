@@ -1,4 +1,3 @@
-
 import collections
 from datetime import datetime
 from json import dumps
@@ -32,25 +31,25 @@ class PixivTagAnalyzer:
 
     @staticmethod
     def rand_wait(base: float = 0.1, rand: float = 1.0) -> None:
-        sleep(base + rand*random())
+        sleep(base + rand * random())
 
-    def analyze(self, target_id: str)\
-            -> Tuple[List[Tuple[str, int]], List[str], List[str]]:
+    def analyze(
+        self, target_id: str
+    ) -> Tuple[List[Tuple[str, int]], List[str], List[str]]:
         self.target_id = target_id
         bookmark_tags, works_tags = self.__collect_tag_data()
         clist = collections.Counter(bookmark_tags + works_tags)
-        sorted_clist = sorted(
-            clist.most_common(), key=lambda x: x[1], reverse=True)
+        sorted_clist = sorted(clist.most_common(), key=lambda x: x[1], reverse=True)
         return sorted_clist, bookmark_tags, works_tags
 
-    def get_target_info(self, target_id: str)\
-            -> Tuple[Dict[str, Any], Dict[str, str]]:
+    def get_target_info(self, target_id: str) -> Tuple[Dict[str, Any], Dict[str, str]]:
         user_info = self.aapi.user_detail(target_id)
-        print(dumps(user_info, indent=4), file=open(
-              'data/{}-{}-userinfo.json'.format(target_id, self.ts), 'w'))
+        print(
+            dumps(user_info, indent=4),
+            file=open("data/{}-{}-userinfo.json".format(target_id, self.ts), "w"),
+        )
         self.rand_wait(0.5)
-        names = {"name": user_info.user.name,
-                 "account": user_info.user.account}
+        names = {"name": user_info.user.name, "account": user_info.user.account}
         return user_info, names
 
     def __collect_tag_data(self) -> Tuple[List[str], List[str]]:
@@ -71,8 +70,7 @@ class PixivTagAnalyzer:
         tags = []
         next = None
         res_len = 30
-        f = open(
-            "data/{}_{}-bookmarks.jsonl".format(self.target_id, self.ts), "a+")
+        f = open("data/{}_{}-bookmarks.jsonl".format(self.target_id, self.ts), "a+")
         while res_len == 30:
             if next is None:
                 res = self.aapi.user_bookmarks_illust(self.target_id)
@@ -97,8 +95,7 @@ class PixivTagAnalyzer:
         tags = []
         next = None
         res_len = 30
-        f = open(
-            "data/{}_{}-works.jsonl".format(self.target_id, self.ts), "a+")
+        f = open("data/{}_{}-works.jsonl".format(self.target_id, self.ts), "a+")
         while res_len == 30:
             if next is None:
                 res = self.aapi.user_illusts(self.target_id)
