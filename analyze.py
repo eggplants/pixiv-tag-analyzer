@@ -9,8 +9,8 @@ from random import random
 from time import sleep
 from typing import Any, Dict, List, Optional, Tuple
 
-from gppt import selenium as s
-from pixivpy3 import AppPixivAPI, PixivAPI
+from gppt import _selenium as s
+from pixivpy3 import AppPixivAPI, PixivAPI  # type: ignore[import]
 
 BANNER = """
 #######################################
