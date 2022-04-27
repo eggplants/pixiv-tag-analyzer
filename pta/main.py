@@ -40,7 +40,7 @@ def main() -> None:
     _, names = p.get_target_info(target_id)
 
     # start to analyze
-    print("[+]Started to analyze user %s(%s)!" % (target_id, names))
+    print("[+]Started to analyze user {}({})!".format(target_id, names))
     print("[+]Now getting tags of this user's bookmarks & works...")
     sorted_clist, bookmark_tags, works_tags = p.analyze(target_id)
     print(

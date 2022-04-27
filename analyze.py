@@ -177,7 +177,7 @@ def main() -> None:
     user_info, names = p.get_target_info(target_id)
 
     # start to analyze
-    print("[+]Started to analyze user %s(%s)!" % (target_id, names))
+    print("[+]Started to analyze user {}({})!".format(target_id, names))
     # print("[+]Expect: bookmark: %d, work: %d" %
     #       (user_info["profile"]["total_illust_bookmarks_public"],
     #        user_info["profile"]["total_illusts"]
