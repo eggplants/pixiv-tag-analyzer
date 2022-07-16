@@ -49,11 +49,13 @@ repos:
           # - ...
         files: ^my-best-python-project/
         args: []
-  - repo: https://github.com/crate-ci/typos
-    rev: 'typos-v0.9.0'
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.31.1
     hooks:
-      - id: typos
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.1.0
+      - id: markdownlint-fix
+        args: [--disable=MD013, --disable=MD033]
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.26.3
     hooks:
-      - id: codespell
+      - id: yamllint
+        args: [-c=.yamllint]
